@@ -26,7 +26,10 @@ class BlackScholes:
         return call_price
 
     def calc_put(self):
-        pass
+        left = self.strike * exp(-1 * self.interest * self.time_to_maturity) 
+        right = self.spot - self.calc_call()
+        put_price = left - right
+        return put_price
 
 if __name__ == "__main__":
     spot = 100              # current price
@@ -37,4 +40,5 @@ if __name__ == "__main__":
 
     black_scholes = BlackScholes(spot, strike, interest, time_to_maturity, volatility)
 
-    print(black_scholes.calc_call())
+    print(f"Call Option Price: ${round(black_scholes.calc_call(), 2)}")
+    print(f"Put Option Price: ${round(black_scholes.calc_put(), 2)}")
