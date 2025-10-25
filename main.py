@@ -61,7 +61,7 @@ def plot_heatmap(bs: BlackScholes, spot_range, vol_range, purchase_price, is_cal
     # Plotting PnL Heatmap
     fig, ax = plt.subplots(figsize=(10, 8))
     fig.patch.set_facecolor("#121212")
-    ax.set_facecolor("#121212")  
+    ax.set_facecolor("#181818")  
 
     sns.heatmap(
         pnls, 
@@ -76,10 +76,20 @@ def plot_heatmap(bs: BlackScholes, spot_range, vol_range, purchase_price, is_cal
     ax.set_title(('Call' if is_call else 'Put') + ' Option PnL', color="white")
     ax.set_xlabel('Spot Price', color="white")
     ax.set_ylabel('Volatility', color="white")
+    ax.tick_params(colors="white")
+
+    cbar = ax.collections[0].colorbar
+    cbar.ax.yaxis.label.set_color("white")
+    cbar.ax.tick_params(color="white", labelcolor="white")
     
     return fig
 
 def main():
+    st.set_page_config(
+        page_title='Black-Scholes Option Pricer', 
+        layout = 'wide', 
+        initial_sidebar_state = 'auto')
+
     st.title("📈 Black-Scholes Option Pricer")
     
     # Sidebar for inputs
