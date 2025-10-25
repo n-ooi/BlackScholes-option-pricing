@@ -1,0 +1,7 @@
+# .streamlit/config.toml
+[theme]
+primaryColor = "#1DB954"          # Spotify green
+backgroundColor = "#121212"       # Main dark background
+secondaryBackgroundColor = "#181818"  # Card background
+textColor = "#FFFFFF"             # White text
+font = "sans serif"               # Clean Spotify-like look

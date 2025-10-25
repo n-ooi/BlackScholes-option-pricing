@@ -60,6 +60,9 @@ def plot_heatmap(bs: BlackScholes, spot_range, vol_range, purchase_price, is_cal
 
     # Plotting PnL Heatmap
     fig, ax = plt.subplots(figsize=(10, 8))
+    fig.patch.set_facecolor("#121212")
+    ax.set_facecolor("#121212")  
+
     sns.heatmap(
         pnls, 
         xticklabels=np.round(spot_range, 2), 
@@ -70,9 +73,9 @@ def plot_heatmap(bs: BlackScholes, spot_range, vol_range, purchase_price, is_cal
         ax=ax
     )
 
-    ax.set_title('CALL' if is_call else 'PUT')
-    ax.set_xlabel('Spot Price')
-    ax.set_ylabel('Volatility')
+    ax.set_title(('Call' if is_call else 'Put') + ' Option PnL', color="white")
+    ax.set_xlabel('Spot Price', color="white")
+    ax.set_ylabel('Volatility', color="white")
     
     return fig
 
@@ -124,6 +127,38 @@ def main():
     call_price = bs.calc_call()
     put_price = bs.calc_put()
     
+    with st.expander("💡 See Black-Scholes Formula..."):
+        st.markdown(r"""
+        ### Call Option
+        $$
+        C = S_0 N(d_1) - K e^{-rT} N(d_2)
+        $$
+                    
+        ---
+
+        ### Put Option
+        $$
+        P = K e^{-rT} N(-d_2) - S_0 N(-d_1)
+        $$
+
+        ---
+        
+        $$
+        \text{where } d_1 = \frac{\ln\left(\frac{S_0}{K}\right) + \left(r + \frac{\sigma^2}{2}\right)T}{\sigma \sqrt{T}},
+        \qquad
+        \text{and } d_2 = d_1 - \sigma \sqrt{T}
+        $$
+
+        ---
+
+        * $S_0$ = Current stock price  
+        * $K$ = Strike price  
+        * $T$ = Time to maturity  
+        * $r$ = Risk-free interest rate  
+        * $\sigma$ = Volatility  
+        * $N(x)$ = Cumulative distribution function of the standard normal distribution
+        """)
+
     st.subheader("📊 Option Prices")
         
     col1, col2 = st.columns([1, 1])
@@ -144,14 +179,15 @@ def main():
 
     st.divider()
 
-    st.header("🔥 PnL Heatmap")
+
+    # PnL Heatmap
     spot_range = np.linspace(spot*0.5, spot*1.5, 10)
     vol_range = np.linspace(volatility*0.5, volatility*1.5, 10)
 
     col1, col2 = st.columns([1,1], gap="small")
 
     with col1:
-        st.subheader("📞 Call Price Heatmap")
+        st.subheader("📞 Call - PnL Heatmap")
         call_purchase = st.number_input(
             "Call Option Purchase Price ($)",
             min_value=0.01,
@@ -162,7 +198,7 @@ def main():
         st.pyplot(heatmap_fig_call)
 
     with col2:
-        st.subheader("🏷️ Put Price Heatmap")
+        st.subheader("🏷️ Put - PnL Heatmap")
         put_purchase = st.number_input(
             "Put Option Purchase Price ($)",
             min_value=0.01,
