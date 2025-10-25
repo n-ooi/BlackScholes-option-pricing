@@ -1,6 +1,13 @@
 import streamlit as st
+import numpy as np
 from numpy import log, sqrt, exp
 from scipy.stats import norm
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.graph_objects as go
+import plotly.express as px
+import pandas as pd
+from  matplotlib.colors import LinearSegmentedColormap
 
 class BlackScholes:
     def __init__(self, spot: float, strike: float, interest: float, time_to_maturity: float, volatility: float):
@@ -32,6 +39,43 @@ class BlackScholes:
         put_price = left - right
         return put_price
 
+def plot_heatmap(bs: BlackScholes, spot_range, vol_range, purchase_price, is_call: bool):
+    "2D heatmap showing varying spot prices and volatility"
+    pnls = np.zeros((len(vol_range), len(spot_range)))
+
+    for i, vol in enumerate(vol_range):
+        for j, spot in enumerate(spot_range):
+            bs_result = BlackScholes(
+                spot=spot,
+                strike=bs.strike,
+                interest=bs.interest,
+                time_to_maturity=bs.time_to_maturity,
+                volatility=vol
+            )
+        
+            if is_call:
+                pnls[i, j] = bs_result.calc_call() - purchase_price
+            else:
+                pnls[i, j] = bs_result.calc_put() - purchase_price
+
+    # Plotting PnL Heatmap
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(
+        pnls, 
+        xticklabels=np.round(spot_range, 2), 
+        yticklabels=np.round(vol_range, 2), 
+        annot=True, 
+        fmt=".2f", 
+        cmap=LinearSegmentedColormap.from_list('rg',["lightcoral", "white", "palegreen"], N=256) , 
+        ax=ax
+    )
+
+    ax.set_title('CALL' if is_call else 'PUT')
+    ax.set_xlabel('Spot Price')
+    ax.set_ylabel('Volatility')
+    
+    return fig
+
 def main():
     st.title("📈 Black-Scholes Option Pricer")
     
@@ -49,7 +93,7 @@ def main():
         strike = st.number_input(
             "Strike Price ($)",
             min_value=0.01,
-            value=105.0,
+            value=100.0,
             step=0.01,
         )
         
@@ -64,7 +108,7 @@ def main():
         time_to_maturity = st.number_input(
             "Time to Maturity (Years)",
             min_value=0.01,
-            value=0.25,
+            value=1.0,
             step=0.01,
         )
         
@@ -97,6 +141,36 @@ def main():
             label="Put Option Price",
             value=f"${put_price:.2f}",
         )
+
+    st.divider()
+
+    st.header("🔥 PnL Heatmap")
+    spot_range = np.linspace(spot*0.5, spot*1.5, 10)
+    vol_range = np.linspace(volatility*0.5, volatility*1.5, 10)
+
+    col1, col2 = st.columns([1,1], gap="small")
+
+    with col1:
+        st.subheader("📞 Call Price Heatmap")
+        call_purchase = st.number_input(
+            "Call Option Purchase Price ($)",
+            min_value=0.01,
+            value=call_price,
+            step=0.01,
+        )
+        heatmap_fig_call = plot_heatmap(bs, spot_range, vol_range, call_purchase, True)
+        st.pyplot(heatmap_fig_call)
+
+    with col2:
+        st.subheader("🏷️ Put Price Heatmap")
+        put_purchase = st.number_input(
+            "Put Option Purchase Price ($)",
+            min_value=0.01,
+            value=put_price,
+            step=0.01,
+        )
+        heatmap_fig_put = plot_heatmap(bs, spot_range, vol_range, put_purchase, False)
+        st.pyplot(heatmap_fig_put)
 
 if __name__ == "__main__":
     main()
